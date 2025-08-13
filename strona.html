@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dawid Małek — Portfolio</title>
+  <meta name="description" content="Portfolio Dawida Małka: inż. Elektroniki i Telekomunikacji, obecnie magisterskie Elektrotechnika (OZE). Informatyka techniczna, grafika i nowe technologie." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{ --bg:#0d1117; --panel:#12151b; --muted:#95a1b2; --text:#e8ecf1; --brand:#56ccf2; --brand-2:#2f80ed; --shadow:0 10px 30px rgba(0,0,0,.35); --radius:18px; --ring:0 0 0 2px rgba(86,204,242,.35) }
+    *{box-sizing:border-box}
+    html{height:100%; scroll-behavior:smooth}
+    body{min-height:100%; margin:0; font-family:Inter,system-ui,Segoe UI,Roboto,Arial,Helvetica,sans-serif; color:var(--text); background:var(--bg); line-height:1.6; overflow-x:hidden}
+    a{color:inherit; text-decoration:none}
+    .container{width:min(1100px,92%); margin-inline:auto}
+
+    /* ---------- header ---------- */
+    header.site{position:sticky; top:0; z-index:50; backdrop-filter:saturate(180%) blur(12px); background:rgba(13,17,23,.92); border-bottom:1px solid rgba(255,255,255,.06)}
+    .nav{display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:12px; padding:12px 0; position:relative}
+    .brand-link{font-weight:800; letter-spacing:.3px}
+    .brand-link:hover{opacity:.85}
+
+    /* menu desktop */
+    .menu{display:flex; gap:10px; align-items:center; justify-content:flex-start; flex-wrap:nowrap}
+    .menu a{padding:8px 12px; border-radius:999px; color:var(--muted); transition:background .3s ease, color .3s ease; white-space:nowrap}
+    .menu a.active,.menu a:hover{color:var(--text); background:rgba(255,255,255,.06)}
+
+    /* actions (clock, views, lang) — bez skakania */
+    .actions{display:flex; align-items:center; gap:10px; white-space:nowrap; justify-self:end}
+    .pill{padding:6px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.03); color:var(--muted); font-size:12px; font-variant-numeric:tabular-nums}
+    .pill.fixed{min-width:12ch; text-align:center}
+    .btn{padding:8px 12px; border-radius:999px; border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.04); color:var(--text)}
+    .btn:hover{background:rgba(255,255,255,.08)}
+
+    /* language button fixed size */
+    .btn.lang-btn{display:inline-flex; align-items:center; justify-content:center; width:44px; padding:8px}
+    .btn.lang-btn svg{display:block; width:24px; height:16px; border-radius:2px; box-shadow:0 0 0 1px rgba(255,255,255,.1) inset}
+
+    /* burger */
+    .burger{display:none; position:absolute; left:0; top:50%; transform:translateY(-50%); flex-direction:column; gap:4px; width:40px; height:36px; justify-content:center; align-items:center; border-radius:10px; border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.04)}
+    .burger span{display:block; width:18px; height:2px; background:var(--text)}
+    .drawer{position:fixed; inset:60px 0 0 0; background:#0b0f15; border-top:1px solid rgba(255,255,255,.06); display:none; padding:16px}
+    .drawer.open{display:block}
+    .drawer a{display:block; padding:10px 12px; color:var(--muted)}
+    .drawer a:hover{background:rgba(255,255,255,.06); color:var(--text); border-radius:10px}
+
+    /* ---------- content ---------- */
+    .hero{padding:56px 0 10px}
+    .grid{display:grid; grid-template-columns:1.1fr .9fr; gap:28px}
+    .card{background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.06); border-radius:var(--radius); box-shadow:var(--shadow)}
+    .card.pad{padding:28px}
+    .headline{font-size:clamp(28px,5vw,48px); line-height:1.15; margin:0 0 8px}
+    .subtitle{color:var(--muted); font-size:clamp(14px,2.4vw,18px)}
+    .chips{display:flex; flex-wrap:wrap; gap:8px; margin-top:14px}
+    .chip{padding:6px 10px; border:1px solid rgba(255,255,255,.1); border-radius:999px; color:var(--muted); background:rgba(255,255,255,.03)}
+    .stats{display:flex; gap:18px; margin-top:16px; color:var(--muted)}
+    .kpi{display:flex; flex-direction:column; gap:2px}
+    .kpi strong{font-size:20px; color:var(--text)}
+    .portrait{border-radius:var(--radius); overflow:hidden; min-height:300px; position:relative; background:#0a0c10}
+    .portrait img{width:100%; height:100%; object-fit:cover; display:block; filter:saturate(1.05)}
+    section{padding:28px 0; scroll-margin-top:84px}
+    h2.sec{font-size:clamp(22px,4vw,32px); margin:0 0 14px}
+    .twocol{display:grid; grid-template-columns:1fr 1fr; gap:18px}
+    .list{display:grid; gap:12px}
+    .item{padding:16px; border-radius:16px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06)}
+    .item .meta{display:flex; gap:12px; color:var(--muted); font-size:14px; flex-wrap:wrap}
+    .item .title{font-weight:700}
+    .tags{display:flex; gap:8px; flex-wrap:wrap; margin-top:6px}
+    .tag{font-size:12px; padding:4px 8px; border-radius:999px; background:rgba(255,255,255,.04); color:var(--muted); border:1px solid rgba(255,255,255,.06)}
+    .skillgrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px}
+    .skill{padding:14px; border-radius:14px; border:1px solid rgba(255,255,255,.06); background:rgba(255,255,255,.03)}
+    .skill h4{margin:0 0 6px}
+    .ext-links{display:flex; gap:10px; flex-wrap:wrap}
+    footer{padding:28px 0 48px; color:var(--muted)}
+    .notice{font-size:12px; opacity:.75}
+    .badge{display:inline-flex; align-items:center; gap:6px; font-size:12px; padding:6px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.02)}
+
+    /* reveal */
+    .reveal{opacity:0; transform:translateY(12px); transition:opacity .6s cubic-bezier(.2,.7,.1,1), transform .6s cubic-bezier(.2,.7,.1,1)}
+    .reveal.on{opacity:1; transform:none}
+    :target .card{animation:pulseIn .5s ease-out}
+    @keyframes pulseIn{0%{transform:scale(.99)}100%{transform:scale(1)}}
+
+    /* i18n smooth switch */
+    body.i18n-anim{transition:opacity .28s ease}
+    body.i18n-dim{opacity:.25}
+
+    @media (max-width: 900px){
+      .grid{grid-template-columns:1fr}
+      .portrait{order:-1}
+      .headline{font-size:34px}
+      .menu{display:none}
+      .burger{display:flex}
+      .brand{padding-left:48px}
+      /* responsive clock */
+      .clock-widget{right:12px; bottom:12px; padding:6px 10px; font-size:12px}
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      html{scroll-behavior:auto}
+      .reveal{transition:none}
+      body.i18n-anim{transition:none}
+    }
+
+    /* formularz */
+    .input{width:100%; margin:.35rem 0 1rem; padding:12px 14px; border-radius:12px; border:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.03); color:var(--text); outline:none}
+    .input:focus{box-shadow:var(--ring)}
+
+    /* Ikony */
+    .icon{width:18px;height:18px;display:inline-block;vertical-align:-3px}
+    .btn .icon{margin-right:6px}
+
+    /* Floating clock */
+    .clock-widget{position:fixed; right:24px; bottom:24px; z-index:60; padding:8px 12px; border-radius:999px; background:rgba(13,17,23,.9); border:1px solid rgba(255,255,255,.08); backdrop-filter:saturate(150%) blur(8px); box-shadow:var(--shadow); color:var(--muted); font-variant-numeric:tabular-nums}
+  </style>
+</head>
+<body>
+  <header class="site">
+    <div class="container nav">
+      <div class="brand">
+        <a href="#start" class="brand-link" title="Do góry">Dawid Małek</a>
+      </div>
+
+      <nav class="menu" id="menu">
+        <a href="#o-mnie" data-i18n="menu.about">O mnie</a>
+        <a href="#umiejetnosci" data-i18n="menu.skills">Umiejętności</a>
+        <a href="#doswiadczenie" data-i18n="menu.exp">Doświadczenie</a>
+        <a href="#edukacja" data-i18n="menu.edu">Edukacja</a>
+        <a href="#certyfikaty" data-i18n="menu.certs">Certyfikaty</a>
+        <a href="#projekty" data-i18n="menu.projects">Projekty</a>
+        <a href="#kontakt" data-i18n="menu.contact">Kontakt</a>
+      </nav>
+
+      <button class="burger" id="burger" aria-label="Menu" title="Menu"><span></span><span></span><span></span></button>
+
+      <div class="actions">
+        <span class="pill fixed" id="views" title="Liczba wyświetleń">👁️ 0</span>
+        <button class="btn lang-btn" id="langBtn" aria-label="Switch language" title="Switch language"></button>
+      </div>
+    </div>
+
+    <div class="drawer" id="drawer">
+      <a href="#o-mnie" data-i18n="menu.about">O mnie</a>
+      <a href="#umiejetnosci" data-i18n="menu.skills">Umiejętności</a>
+      <a href="#doswiadczenie" data-i18n="menu.exp">Doświadczenie</a>
+      <a href="#edukacja" data-i18n="menu.edu">Edukacja</a>
+      <a href="#certyfikaty" data-i18n="menu.certs">Certyfikaty</a>
+      <a href="#projekty" data-i18n="menu.projects">Projekty</a>
+      <a href="#kontakt" data-i18n="menu.contact">Kontakt</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" id="start">
+      <div class="container grid">
+        <div class="card pad reveal">
+          <h1 class="headline" data-i18n="hero.title">Cześć, jestem <span style="background:linear-gradient(135deg,var(--brand),var(--brand-2)); -webkit-background-clip:text; background-clip:text; color:transparent">Dawid Małek</span> 👋</h1>
+          <p class="subtitle" data-i18n="hero.lead">Inż. Elektroniki i Telekomunikacji (PRz, 10.2021–02.2025). Aktualnie studia magisterskie: Elektrotechnika — OZE (od 02.2025). Łączę <strong>hardware</strong> z <strong>kodem</strong> i designem.</p>
+          <div class="chips" aria-label="Specjalności i zainteresowania">
+            <span class="chip">⚡ Elektronika</span><span class="chip">🐍 Python</span><span class="chip">🧪 LabVIEW</span><span class="chip">🔧 STM32</span><span class="chip">📐 Matlab</span><span class="chip">🗄️ Bazy danych</span><span class="chip">🔌 LTSpice</span><span class="chip">🌐 HTML/CSS/JS</span><span class="chip">🧰 MS Office</span>
+          </div>
+          <div class="stats">
+            <div class="kpi"><strong>📍 Rzeszów</strong><span>Polska</span></div>
+            <div class="kpi" data-i18n="hero.lang"><strong>🗣️ Języki</strong><span>polski — ojczysty<br>angielski — średnio zaawansowany</span></div>
+          </div>
+          <div class="ext-links" style="margin-top:16px">
+            <a class="btn" href="https://github.com/169724" target="_blank" rel="noopener" title="GitHub">
+              <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a12 12 0 0 0-3.79 23.4c.6.11.82-.26.82-.58v-2.02c-3.34.73-4.04-1.61-4.04-1.61-.55-1.41-1.34-1.79-1.34-1.79-1.1-.76.08-.75.08-.75 1.22.09 1.87 1.25 1.87 1.25 1.08 1.85 2.84 1.31 3.53 1 .11-.79.42-1.31.76-1.61-2.66-.31-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.55.12-3.22 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.3-1.55 3.3-1.23 3.3-1.23.66 1.67.24 2.92.12 3.22.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.61-5.49 5.91.43.37.81 1.1.81 2.22v3.29c0 .32.21.7.82.58A12 12 0 0 0 12 .5Z"/></svg>
+              GitHub ↗
+            </a>
+            <a class="btn" href="https://www.linkedin.com/in/ma%C5%82ek-dawid-56526b316/" target="_blank" rel="noopener" title="LinkedIn">
+              <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5C4.98 4.88 3.86 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1 4.98 2.12 4.98 3.5zM.5 8.5h4V24h-4V8.5zM8 8.5h3.8v2.1h.1c.5-.9 1.7-2.1 3.6-2.1 3.8 0 4.5 2.5 4.5 5.7V24h-4v-6.9c0-1.6 0-3.6-2.2-3.6s-2.5 1.7-2.5 3.5V24H8V8.5z"/></svg>
+              LinkedIn ↗
+            </a>
+            <a class="btn" href="https://imgur.com/a/grafiki-2018-dejv-fx-YtB90Pd" target="_blank" rel="noopener" title="Imgur">
+              <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.15 2 11.2c0 4.38 3.28 8.06 7.7 8.92.56.1.77-.23.77-.52v-1.83c-3.13.66-3.8-1.31-3.8-1.31-.51-1.25-1.25-1.59-1.25-1.59-1.02-.67.08-.66.08-.66 1.13.08 1.73 1.14 1.73 1.14 1 .1 1.86-.74 2.13-1.12.1-.73.39-1.23.7-1.52-2.5-.29-5.12-1.25-5.12-5.56 0-1.23.44-2.23 1.17-3.02-.11-.28-.51-1.45.11-3.02 0 0 .95-.3 3.11 1.16a10.8 10.8 0 0 1 5.67 0C18 4.1 19 4.4 19 4.4c.62 1.57.22 2.74.11 3.02.73.79 1.17 1.79 1.17 3.02 0 4.32-2.63 5.26-5.14 5.54.41.35.76 1.03.76 2.09v3.08c0 .3.2.66.77.55C18.72 19.26 22 15.58 22 11.2 22 6.15 17.52 2 12 2z"/></svg>
+              Imgur ↗
+            </a>
+            <a class="btn" href="CV_Dawid_Małek.pdf" download>CV (PDF)</a>
+          </div>
+        </div>
+        <div class="portrait card reveal" aria-hidden>
+          <img src="23.png" alt="Portret Dawida Małka" />
+        </div>
+      </div>
+    </section>
+
+    <section id="o-mnie" class="container reveal">
+      <h2 class="sec" data-i18n="about.h2">🧑‍💻 O mnie</h2>
+      <div class="twocol">
+        <div class="card pad">
+          <p data-i18n="about.p1">Jestem inżynierem o profilu elektroniczno-informatycznym z doświadczeniem w działach IT i serwisie komputerowym. Lubię łączyć praktyczne podejście do sprzętu z programowaniem i prototypowaniem.</p>
+          <p data-i18n="about.p2">Po godzinach tworzę grafiki i gram w szachy oraz gry strategiczne. Zimą można mnie spotkać na stoku ⛷️.</p>
+        </div>
+        <div class="card pad">
+          <ul class="list" style="margin:0">
+            <li class="item"><div class="title">🎂 <span data-i18n="about.birth">Data urodzenia</span></div><div class="meta">02.06.2001</div></li>
+            <li class="item"><div class="title">📍 <span data-i18n="about.loc">Lokalizacja</span></div><div class="meta">Rzeszów, Polska</div></li>
+            <li class="item"><div class="title">✉️ E-mail</div><div class="meta"><a href="mailto:dawidmalek80@gmail.com">dawidmalek80@gmail.com</a></div></li>
+            <li class="item"><div class="title">📞 <span data-i18n="about.phone">Telefon</span></div><div class="meta"><a href="tel:+48882414425">+48 882 414 425</a></div></li>
+            <li class="item"><div class="title">🗣️ <span data-i18n="about.lang">Języki</span></div><div class="meta" data-i18n="about.langval">polski — ojczysty<br>angielski — średnio zaawansowany</div></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="umiejetnosci" class="container reveal">
+      <h2 class="sec" data-i18n="skills.h2">🛠️ Umiejętności</h2>
+      <div class="skillgrid">
+        <div class="skill"><h4>Programowanie</h4><div class="tags"><span class="tag">Python</span><span class="tag">JavaScript</span><span class="tag">LabVIEW</span><span class="tag">Matlab</span></div></div>
+        <div class="skill"><h4>WWW & Bazy danych</h4><div class="tags"><span class="tag">HTML/CSS</span><span class="tag">SQL (podstawy)</span><span class="tag">Microsoft Office</span></div></div>
+        <div class="skill"><h4>Elektronika</h4><div class="tags"><span class="tag">STM32</span><span class="tag">LTSpice</span><span class="tag">Serwis PC</span><span class="tag">Admin. sieci</span></div></div>
+        <div class="skill"><h4>Soft skills</h4><div class="tags"><span class="tag">Współpraca</span><span class="tag">Obsługa klienta</span><span class="tag">Planowanie</span></div></div>
+      </div>
+    </section>
+
+    <section id="doswiadczenie" class="container reveal">
+      <h2 class="sec" data-i18n="exp.h2">💼 Doświadczenie</h2>
+      <div class="list">
+        <div class="item">
+          <div class="title">Praktykant — Bury Sp. z o.o. (IT)</div>
+          <div class="meta">07.2023 – 08.2023 · Rzeszów</div>
+          <div class="tags"><span class="tag">Dział IT</span><span class="tag">Urządzenia elektryczne</span></div>
+          <p class="meta">Praktyka zawodowa w dziale IT z tworzeniem urządzeń elektrycznych.</p>
+        </div>
+        <div class="item">
+          <div class="title">Stażysta w Dziale IT — F.U.H. INKOM Piotr Łacko</div>
+          <div class="meta">01.2020 – 01.2020 · Janów Lubelski</div>
+          <div class="tags"><span class="tag">Serwis PC</span><span class="tag">Administracja sieci</span><span class="tag">Edycja baz danych</span><span class="tag">Obsługa klienta</span></div>
+          <p class="meta">Serwis urządzeń komputerowych, administracja sieci i współpraca z zespołem sklepu.</p>
+        </div>
+        <div class="item">
+          <div class="title">Praktykant — Lubelskie Centrum Komputerowe Sp. z o.o.</div>
+          <div class="meta">11.2018 & 09.2019 · Janów Lubelski</div>
+          <div class="tags"><span class="tag">Serwis PC</span><span class="tag">Administracja sieci</span><span class="tag">Obsługa klienta</span><span class="tag">Kasa fiskalna</span><span class="tag">Edycja baz danych</span></div>
+          <p class="meta">Serwis komputerów, administracja sieci, praca z kasą fiskalną i wsparcie klienta.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="edukacja" class="container reveal">
+      <h2 class="sec" data-i18n="edu.h2">🎓 Edukacja</h2>
+      <div class="list">
+        <div class="item"><div class="title">Politechnika Rzeszowska — Elektrotechnika (magister), specjalizacja: Odnawialne Źródła Energii</div><div class="meta">02.2025 – obecnie</div></div>
+        <div class="item"><div class="title">Politechnika Rzeszowska — Elektronika i Telekomunikacja (inżynier)</div><div class="meta">10.2021 – 02.2025</div></div>
+        <div class="item"><div class="title">Zespół Szkół Zawodowych w Janowie Lubelskim — Technik Informatyk</div><div class="meta">09.2017 – 05.2021</div></div>
+      </div>
+    </section>
+
+    <section id="certyfikaty" class="container reveal">
+      <h2 class="sec" data-i18n="certs.h2">🏅 Certyfikaty i kursy</h2>
+      <div class="twocol">
+        <div class="item"><div class="title">Grafik komputerowy</div><div class="meta">07.2021 — International Competence Verification Centre</div></div>
+        <div class="item"><div class="title">EE.09 — Programowanie, tworzenie i administrowanie stronami WWW i bazami danych</div><div class="meta">04.2021 — OKE Kraków</div></div>
+        <div class="item"><div class="title">EE.08 — Montaż i eksploatacja systemów komputerowych, urządzeń peryferyjnych i sieci</div><div class="meta">08.2020 — OKE Kraków</div></div>
+      </div>
+      <div class="card pad" style="margin-top:12px">
+        <div class="title">🤝 <span data-i18n="certs.extra">Aktywność dodatkowa</span></div>
+        <div class="meta">01.2016 – 12.2016 — Wolontariusz, Janów Lubelski (Światowe Dni Młodzieży 2016)</div>
+      </div>
+    </section>
+
+    <section id="projekty" class="container reveal">
+      <h2 class="sec" data-i18n="projects.h2">🖼️ Projekty & Grafiki</h2>
+      <div class="card pad">
+        <p data-i18n="projects.p">Wybrane prace graficzne oraz projekty publikuję w albumie na Imgur oraz repozytoriach na GitHub. Kliknij, aby zobaczyć więcej:</p>
+        <div class="ext-links" style="margin-top:10px">
+          <a class="btn" href="https://imgur.com/a/grafiki-2018-dejv-fx-YtB90Pd" target="_blank" rel="noopener" title="Imgur">
+            <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.15 2 11.2c0 4.38 3.28 8.06 7.7 8.92.56.1.77-.23.77-.52v-1.83c-3.13.66-3.8-1.31-3.8-1.31-.51-1.25-1.25-1.59-1.25-1.59-1.02-.67.08-.66.08-.66 1.13.08 1.73 1.14 1.73 1.14 1 .1 1.86-.74 2.13-1.12.1-.73.39-1.23.7-1.52-2.5-.29-5.12-1.25-5.12-5.56 0-1.23.44-2.23 1.17-3.02-.11-.28-.51-1.45.11-3.02 0 0 .95-.3 3.11 1.16a10.8 10.8 0 0 1 5.67 0C18 4.1 19 4.4 19 4.4c.62 1.57.22 2.74.11 3.02.73.79 1.17 1.79 1.17 3.02 0 4.32-2.63 5.26-5.14 5.54.41.35.76 1.03.76 2.09v3.08c0 .3.2.66.77.55C18.72 19.26 22 15.58 22 11.2 22 6.15 17.52 2 12 2z"/></svg>
+            Imgur ↗
+          </a>
+          <a class="btn" href="https://github.com/169724" target="_blank" rel="noopener" title="GitHub">
+            <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a12 12 0 0 0-3.79 23.4c.6.11.82-.26.82-.58v-2.02c-3.34.73-4.04-1.61-4.04-1.61-.55-1.41-1.34-1.79-1.34-1.79-1.1-.76.08-.75.08-.75 1.22.09 1.87 1.25 1.87 1.25 1.08 1.85 2.84 1.31 3.53 1 .11-.79.42-1.31.76-1.61-2.66-.31-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.55.12-3.22 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.3-1.55 3.3-1.23 3.3-1.23.66 1.67.24 2.92.12 3.22.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.61-5.49 5.91.43.37.81 1.1.81 2.22v3.29c0 .32.21.7.82.58A12 12 0 0 0 12 .5Z"/></svg>
+            GitHub ↗
+          </a>
+          <a class="btn" href="CV_Dawid_Małek.pdf" download>CV (PDF)</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="kontakt" class="container reveal">
+      <h2 class="sec" data-i18n="contact.h2">✉️ Kontakt</h2>
+      <div class="twocol">
+        <form class="card pad" onsubmit="sendMsg(event)">
+          <label> <span data-i18n="contact.name">Imię i nazwisko</span><br>
+            <input required name="name" class="input" placeholder="Twoje imię" data-i18n-ph="ph.name"/>
+          </label>
+          <label> <span data-i18n="contact.mail">E-mail</span><br>
+            <input required type="email" name="email" class="input" placeholder="nazwa@domena.pl" data-i18n-ph="ph.mail"/>
+          </label>
+          <label> <span data-i18n="contact.msg">Wiadomość</span><br>
+            <textarea required name="message" class="input" rows="5" placeholder="Napisz wiadomość..." data-i18n-ph="ph.msg"></textarea>
+          </label>
+          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap">
+            <button class="btn" type="submit" style="background:linear-gradient(135deg,var(--brand),var(--brand-2)); color:#0b0c10; border-color:transparent; font-weight:700" data-i18n="contact.send">Wyślij</button>
+          </div>
+        </form>
+        <div class="card pad">
+          <p data-i18n="contact.pref">Preferujesz tradycyjny kontakt? Zadzwoń lub napisz maila.</p>
+          <p><strong>E-mail:</strong> <a href="mailto:dawidmalek80@gmail.com">dawidmalek80@gmail.com</a><br>
+             <strong data-i18n="contact.phoneShort">Telefon:</strong> <a href="tel:+48882414425">+48 882 414 425</a></p>
+          <p data-i18n="contact.follow">Obserwuj mnie:</p>
+          <div class="ext-links">
+            <a class="badge" href="https://github.com/169724" target="_blank" rel="noopener" title="GitHub"><svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a12 12 0 0 0-3.79 23.4c.6.11.82-.26.82-.58v-2.02c-3.34 .73-4.04-1.61-4.04-1.61-.55-1.41-1.34-1.79-1.34-1.79-1.1-.76.08-.75.08-.75 1.22.09 1.87 1.25 1.87 1.25 1.08 1.85 2.84 1.31 3.53 1 .11-.79.42-1.31.76-1.61-2.66-.31-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.55.12-3.22 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.3-1.55 3.3-1.23 3.3-1.23.66 1.67.24 2.92 .12 3.22 .77 .84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.61-5.49 5.91 .43 .37 .81 1.1 .81 2.22 v3.29c0 .32 .21 .7 .82 .58A12 12 0 0 0 12 .5Z"/></svg> GitHub</a>
+            <a class="badge" href="https://www.linkedin.com/in/ma%C5%82ek-dawid-56526b316/" target="_blank" rel="noopener" title="LinkedIn"><svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5C4.98 4.88 3.86 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1 4.98 2.12 4.98 3.5zM.5 8.5h4V24h-4V8.5zM8 8.5h3.8v2.1h.1c.5-.9 1.7-2.1 3.6-2.1 3.8 0 4.5 2.5 4.5 5.7V24h-4v-6.9c0-1.6 0-3.6-2.2-3.6s-2.5 1.7-2.5 3.5V24H8V8.5z"/></svg> LinkedIn</a>
+            <a class="badge" href="https://imgur.com/a/grafiki-2018-dejv-fx-YtB90Pd" target="_blank" rel="noopener" title="Imgur"><svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.15 2 11.2c0 4.38 3.28 8.06 7.7 8.92.56.1.77-.23.77-.52v-1.83c-3.13.66-3.8-1.31-3.8-1.31-.51-1.25-1.25-1.59-1.25-1.59-1.02-.67.08-.66.08-.66 1.13.08 1.73 1.14 1.73 1.14 1 .1 1.86-.74 2.13-1.12.1-.73.39-1.23.7-1.52-2.5-.29-5.12-1.25-5.12-5.56 0-1.23.44-2.23 1.17-3.02-.11-.28-.51-1.45.11-3.02 0 0 .95-.3 3.11 1.16a10.8 10.8 0 0 1 5.67 0C18 4.1 19 4.4 19 4.4c.62 1.57.22 2.74.11 3.02.73.79 1.17 1.79 1.17 3.02 0 4.32-2.63 5.26-5.14 5.54.41.35.76 1.03.76 2.09v3.08c0 .3.2.66.77.55C18.72 19.26 22 15.58 22 11.2 22 6.15 17.52 2 12 2z"/></svg> Imgur</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Floating clock moved out of header to avoid layout shifts -->
+  <div class="clock-widget" id="clockFloat" aria-live="polite" title="Zegar">🕒 --:--:--</div>
+
+  <footer>
+    <div class="container">
+      <div class="card pad">© <span id="year"></span> Dawid Małek. <span data-i18n="footer.rights">Wszelkie prawa zastrzeżone.</span></div>
+    </div>
+  </footer>
+
+  <script>
+    // Drawer (hamburger)
+    const burger = document.getElementById('burger');
+    const drawer = document.getElementById('drawer');
+    burger && burger.addEventListener('click',()=>{ drawer.classList.toggle('open'); });
+    if(drawer){ drawer.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>drawer.classList.remove('open'))); }
+
+    // Scroll reveal
+    const io = new IntersectionObserver((entries)=>{ entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('on'); io.unobserve(e.target);} }) },{threshold:.12});
+    document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+    // Scroll spy
+    const sections=[...document.querySelectorAll('main section[id]')];
+    const menu=document.getElementById('menu');
+    const spy=new IntersectionObserver((entries)=>{ entries.forEach(entry=>{ const id=entry.target.getAttribute('id'); const link=menu && menu.querySelector(`a[href="#${id}"]`); if(link && entry.isIntersecting){ menu.querySelectorAll('a').forEach(a=>a.classList.remove('active')); link.classList.add('active'); } }) },{rootMargin:"-50% 0px -45% 0px", threshold:0});
+    sections.forEach(sec=>spy.observe(sec));
+
+    // Formularz — mailto
+    function sendMsg(e){ e.preventDefault(); const f=e.target; const name=encodeURIComponent(f.name.value.trim()); const email=encodeURIComponent(f.email.value.trim()); const body=encodeURIComponent(f.message.value.trim()); const subject=encodeURIComponent(`Wiadomość ze strony — ${name}`); window.location.href=`mailto:dawidmalek80@gmail.com?subject=${subject}&body=${body}%0D%0DKontakt zwrotny: ${email}`; }
+
+    // Rok w stopce
+    document.getElementById('year').textContent=new Date().getFullYear();
+
+    // Zegar (stała szerokość pigułki, tabular-nums w CSS)
+    const clockEl = document.getElementById('clockFloat');
+    function tick(){ const d=new Date(); const h=String(d.getHours()).padStart(2,'0'); const m=String(d.getMinutes()).padStart(2,'0'); const s=String(d.getSeconds()).padStart(2,'0'); clockEl.textContent=`🕒 ${h}:${m}:${s}`; }
+    setInterval(tick,1000); tick();
+
+    // Licznik wyświetleń (lokalnie)
+    const VKEY='dm_views_total';
+    const views = Number(localStorage.getItem(VKEY)||0)+1; localStorage.setItem(VKEY,views);
+    document.getElementById('views').textContent=`👁️ ${views}`;
+
+    // i18n — zachowaj polskie oryginały (powrót z EN bez utraty HTML)
+    const originals = {};
+    document.querySelectorAll('[data-i18n]').forEach(el=>{ originals[el.getAttribute('data-i18n')] = el.innerHTML; });
+
+    // zapisz polskie placeholdery
+    const phOriginals = {};
+    document.querySelectorAll('[data-i18n-ph]').forEach(el=>{ phOriginals[el.getAttribute('data-i18n-ph')] = el.getAttribute('placeholder'); });
+
+    // Słownik EN
+    const i18n = {
+      en:{
+        'menu.about':'About', 'menu.skills':'Skills', 'menu.exp':'Experience', 'menu.edu':'Education', 'menu.certs':'Certificates', 'menu.projects':'Projects', 'menu.contact':'Contact',
+        'hero.title':'Hi, I\'m <span style="background:linear-gradient(135deg,var(--brand),var(--brand-2)); -webkit-background-clip:text; background-clip:text; color:transparent">Dawid Małek</span> 👋',
+        'hero.lead':'B.Eng. in Electronics & Telecommunications (PRz, 10.2021–02.2025). Currently M.Sc. in Electrical Engineering — RES (since 02.2025). I connect <strong>hardware</strong> with <strong>code</strong> and design.',
+        'hero.lang':'<strong>🗣️ Languages</strong><span>Polish — native<br>English — intermediate</span>',
+        'about.h2':'🧑‍💻 About me', 'about.p1':'Engineer with an electronics & IT profile and hands-on IT/service experience. I like combining practical hardware work with programming and prototyping.', 'about.p2':'After hours I create graphics and play chess & strategy games. In winter you\'ll find me on the ski slope ⛷️.', 'about.birth':'Date of birth', 'about.loc':'Location', 'about.phone':'Phone', 'about.lang':'Languages', 'about.langval':'Polish — native<br>English — intermediate',
+        'skills.h2':'🛠️ Skills', 'exp.h2':'💼 Experience', 'edu.h2':'🎓 Education', 'certs.h2':'🏅 Certificates & courses', 'certs.extra':'Additional activity', 'projects.h2':'🖼️ Projects & Graphics', 'projects.p':'Selected artwork and projects are published on Imgur and GitHub repositories. Click to see more:', 'contact.h2':'✉️ Contact', 'contact.name':'Full name', 'contact.mail':'E‑mail', 'contact.msg':'Message', 'contact.send':'Send', 'contact.pref':'Prefer traditional contact? Call or email me.', 'contact.phoneShort':'Phone:', 'contact.follow':'Follow me:', 'footer.rights':'All rights reserved.'
+      },
+      ph_en:{ 'ph.name':'Your name', 'ph.mail':'name@domain.com', 'ph.msg':'Type your message...' }
+    };
+
+    const langBtn=document.getElementById('langBtn');
+    // Inline SVG flags (no emoji fallback issues)
+    const SVG_GB = '<svg viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="8" fill="#ffffff"/><rect y="8" width="24" height="8" fill="#dc143c"/></svg>';
+    const SVG_PL = '<svg viewBox="0 0 24 16" aria-hidden="true"><defs><clipPath id="uk"><rect width="24" height="16" rx="2"/></clipPath></defs><g clip-path="url(#uk)"><rect width="24" height="16" fill="#012169"/><path d="M0,0 L24,16 M24,0 L0,16" stroke="#ffffff" stroke-width="3"/><path d="M0,0 L24,16 M24,0 L0,16" stroke="#C8102E" stroke-width="2"/><path d="M12,0 V16 M0,8 H24" stroke="#ffffff" stroke-width="5"/><path d="M12,0 V16 M0,8 H24" stroke="#C8102E" stroke-width="3"/></g></svg>';
+    function setLang(lang){
+      const isEN = lang==='en';
+      document.documentElement.lang = isEN ? 'en' : 'pl';
+      if(isEN){
+        // wstaw tłumaczenia EN
+        Object.entries(i18n.en).forEach(([k,v])=>{
+          document.querySelectorAll(`[data-i18n="${k}"]`).forEach(el=>{ el.innerHTML=v; });
+        });
+        Object.entries(i18n.ph_en).forEach(([k,v])=>{
+          document.querySelectorAll(`[data-i18n-ph="${k}"]`).forEach(el=>{ el.setAttribute('placeholder', v); });
+        });
+        langBtn.innerHTML = SVG_PL;
+        langBtn.title='Zmień język na polski';
+        langBtn.setAttribute('aria-label','Zmień język na polski');
+      }else{
+        // przywróć polskie oryginały
+        Object.entries(originals).forEach(([k,v])=>{
+          document.querySelectorAll(`[data-i18n="${k}"]`).forEach(el=>{ el.innerHTML=v; });
+        });
+        Object.entries(phOriginals).forEach(([k,v])=>{
+          document.querySelectorAll(`[data-i18n-ph="${k}"]`).forEach(el=>{ el.setAttribute('placeholder', v); });
+        });
+        langBtn.innerHTML = SVG_GB;
+        langBtn.title='Switch language to English';
+        langBtn.setAttribute('aria-label','Switch language to English');
+      }
+      localStorage.setItem('dm_lang', lang);
+    }
+
+    langBtn.addEventListener('click',()=>{
+      const current = localStorage.getItem('dm_lang') || 'pl';
+      // smooth crossfade
+      document.body.classList.add('i18n-anim','i18n-dim');
+      setTimeout(()=>{
+        const next = current==='pl' ? 'en' : 'pl';
+        setLang(next);
+        // fade back in on next frame
+        requestAnimationFrame(()=>{
+          document.body.classList.remove('i18n-dim');
+        });
+      }, 150);
+    });
+
+    // init — domyślnie polski
+    // init — zawsze startujemy po polsku
+localStorage.setItem('dm_lang','pl');
+setLang('pl');
+  </script>
+</body>
+</html>

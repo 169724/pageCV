@@ -1,7 +1,7 @@
 # pageCV
 Personal responsive portfolio website with PL/EN support, clock, visit counter and modern design.
 
-##PL
+## PL
 
 # 🌐 Portfolio – Dawid Małek
 
@@ -33,7 +33,7 @@ Projekt zaprojektowany z myślą o estetyce, czytelności i funkcjonalności na 
    ```bash
    git clone https://github.com/169724/pageCV.git
 
-##ENG
+## ENG
 
 # 🌐 Portfolio – Dawid Małek
 

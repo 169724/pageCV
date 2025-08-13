@@ -114,6 +114,42 @@
 
     /* Floating clock */
     .clock-widget{position:fixed; right:24px; bottom:24px; z-index:60; padding:8px 12px; border-radius:999px; background:rgba(13,17,23,.9); border:1px solid rgba(255,255,255,.08); backdrop-filter:saturate(150%) blur(8px); box-shadow:var(--shadow); color:var(--muted); font-variant-numeric:tabular-nums}
+  
+    /* ---------- mobile polish ---------- */
+    @media (max-width: 600px){
+      .container{width:min(1100px,94%)}
+      header.site .nav{gap:8px; padding:10px 0}
+      .brand-link{font-size:16px}
+      .actions .pill#views{display:none} /* ukryj licznik, żeby nagłówek się nie rozjeżdżał */
+      .btn.lang-btn{width:38px; padding:6px}
+
+      .hero{padding:32px 0 6px}
+      .grid{grid-template-columns:1fr}
+      .portrait{order:-1; min-height:220px}
+      .card.pad{padding:18px}
+      .headline{font-size:28px}
+      .subtitle{font-size:14px}
+
+      .chips{gap:6px}
+      .chip{padding:4px 8px; font-size:12px}
+
+      .stats{flex-direction:column; gap:8px}
+      .kpi strong{font-size:16px}
+
+      .twocol{grid-template-columns:1fr}
+
+      .ext-links{gap:8px}
+      .ext-links .btn{flex:1 1 calc(50% - 8px)}
+      @media (max-width: 360px){
+        .ext-links .btn{flex-basis:100%}
+      }
+
+      .badge{padding:6px 10px; font-size:12px}
+      .item{padding:12px}
+      .tag{font-size:11px}
+      .skillgrid{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+    }
+
   </style>
 </head>
 <body>
@@ -377,8 +413,8 @@
 
     const langBtn=document.getElementById('langBtn');
     // Inline SVG flags (no emoji fallback issues)
-    const SVG_GB = '<svg viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="8" fill="#ffffff"/><rect y="8" width="24" height="8" fill="#dc143c"/></svg>';
-    const SVG_PL = '<svg viewBox="0 0 24 16" aria-hidden="true"><defs><clipPath id="uk"><rect width="24" height="16" rx="2"/></clipPath></defs><g clip-path="url(#uk)"><rect width="24" height="16" fill="#012169"/><path d="M0,0 L24,16 M24,0 L0,16" stroke="#ffffff" stroke-width="3"/><path d="M0,0 L24,16 M24,0 L0,16" stroke="#C8102E" stroke-width="2"/><path d="M12,0 V16 M0,8 H24" stroke="#ffffff" stroke-width="5"/><path d="M12,0 V16 M0,8 H24" stroke="#C8102E" stroke-width="3"/></g></svg>';
+    const SVG_PL = '<svg viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="8" fill="#ffffff"/><rect y="8" width="24" height="8" fill="#dc143c"/></svg>';
+    const SVG_GB = '<svg viewBox="0 0 24 16" aria-hidden="true"><defs><clipPath id="uk"><rect width="24" height="16" rx="2"/></clipPath></defs><g clip-path="url(#uk)"><rect width="24" height="16" fill="#012169"/><path d="M0,0 L24,16 M24,0 L0,16" stroke="#ffffff" stroke-width="3"/><path d="M0,0 L24,16 M24,0 L0,16" stroke="#C8102E" stroke-width="2"/><path d="M12,0 V16 M0,8 H24" stroke="#ffffff" stroke-width="5"/><path d="M12,0 V16 M0,8 H24" stroke="#C8102E" stroke-width="3"/></g></svg>';
     function setLang(lang){
       const isEN = lang==='en';
       document.documentElement.lang = isEN ? 'en' : 'pl';

@@ -17,9 +17,9 @@ Responsywna, nowoczesna i wielojęzyczna strona portfolio w HTML, CSS i JavaScri
 * ⏱ **Zegar cyfrowy** w prawym dolnym rogu
 * 👁️ **Licznik wyświetleń (Cloudflare Workers + KV)** – inkrementacja żądaniem **GET `/hit`** i odczyt **GET `/`**
 * 📂 Sekcje: *O mnie*, *Umiejętności*, *Doświadczenie*, *Edukacja*, *Certyfikaty*, *Projekty*, *Kontakt*
-* 🔗 Linki do **[GitHub](https://github.com/169724)**, **LinkedIn** i **Imgur**
+* 🔗 Linki do **GitHub**, **LinkedIn** i **Imgur**
 * 📄 Pobieranie CV w formacie PDF
-* 📬 **Formularz kontaktowy przez [Web3Forms](https://web3forms.com/)** (zamiast `mailto:`)
+* 📬 **Formularz kontaktowy przez Web3Forms** (zamiast `mailto:`)
 * 🌌 Dodatki wizualne: tło z gwiazdami, animacje scrollowania, efekt 3D przycisków, pasek postępu przewijania, efekt maszyny do pisania
 
 ### 🛠 Technologie
@@ -41,92 +41,71 @@ Responsywna, nowoczesna i wielojęzyczna strona portfolio w HTML, CSS i JavaScri
 
 ## 🔧 Konfiguracja licznika wyświetleń (Cloudflare)
 
-**Założenia:** używamy Workera w trybie *modules* oraz przestrzeni **KV** do przechowywania stanu.
+**Założenia:** Worker w trybie *modules* i przestrzeń **KV** do przechowywania stanu.
 
-### 1) Utwórz KV Namespace
+1. **Utwórz KV Namespace** – np. `pagecv-views`.
 
-Cloudflare Dashboard → **Workers & Pages → KV** → *Create namespace* (np. `pagecv-views`).
+2. **Zbinduj KV w Workerze** – *Settings → Bindings → KV Namespace → Add binding*:
 
-### 2) Stwórz Workera i zbindowuj KV
+   * *Variable name:* `VIEWS_KV`
+   * *Namespace:* `pagecv-views`
 
-Workers & Pages → **Create** → *Worker* → tryb *modules* → *Settings → Bindings → KV Namespace → Add binding*:
+3. **Kod Workera** (skrót): implementuje `GET /hit` → inkrement, `GET /` → odczyt, `OPTIONS` → preflight, pełny CORS.
 
-* *Variable name:* `VIEWS_KV`
-* *Namespace:* `pagecv-views`
+4. **Front‑end** – w `app.js` ustaw `CF_API` na adres Workera i dodaj w HTML element na licznik: `<span id="views">`.
 
-### 3) Kod Workera
-
-Wklej i **Deploy**:
-
-```js
-export default {
-  async fetch(request, env) {
-    const url = new URL(request.url);
-    const CORS = {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-      'Access-Control-Max-Age': '86400',
-    };
-    if (request.method === 'OPTIONS') return new Response(null, { headers: CORS });
-
-    const json = (obj, status=200) => new Response(JSON.stringify(obj), {
-      status,
-      headers: { 'content-type': 'application/json; charset=utf-8', ...CORS },
-    });
-
-    const read = async () => {
-      const n = parseInt((await env.VIEWS_KV.get('count')) || '0', 10) || 0;
-      return json({ count: n });
-    };
-    const bump = async () => {
-      const n = parseInt((await env.VIEWS_KV.get('count')) || '0', 10) || 0;
-      const next = n + 1;
-      await env.VIEWS_KV.put('count', String(next), { metadata: { ts: Date.now() } });
-      return json({ count: next });
-    };
-
-    if (url.pathname === '/favicon.ico') return new Response(null, { status: 204, headers: CORS });
-    if (url.pathname === '/health') return json({ ok: true });
-
-    if (request.method === 'GET' && url.pathname === '/hit') return bump();
-    if (request.method === 'POST' && url.pathname === '/') return bump();
-    if (request.method === 'GET') return read();
-
-    return json({ error: 'Method Not Allowed' }, 405);
-  }
-};
-```
-
-### 4) Front‑end – integracja
-
-* W `app.js` używany jest endpoint Workera, np.:
-
-  ```js
-  const CF_API = 'https://<twoj-worker>.workers.dev';
-  ```
-* Licznik podpinamy do elementu (np. w nawigacji):
-
-  ```html
-  <span id="views" class="pill">👁️ 0</span>
-  ```
-* Skrypt ładowany z cache‑bustingiem (szczególnie na GitHub Pages):
-
-  ```html
-  <script src="app.js?v=2024-08-18" defer></script>
-  ```
-
-### 5) Jak to działa
-
-* Wejście na stronę → `GET /hit` (inkrementacja)
-* Odświeżanie co 30 s → `GET /` (sam odczyt)
-* CORS jest dozwolony (`Access-Control-Allow-Origin: *`), więc działa na GitHub Pages.
+5. **Cache‑busting** na GitHub Pages – ładuj `app.js` z parametrem wersji, np. `app.js?v=2024-08-18`.
 
 ### 🩺 Troubleshooting
 
-* **Widzę `POST` w konsoli** → przeglądarka używa starego `app.js`. Wymuś cache‑busting (`?v=...`) i *Disable cache* w DevTools.
-* **`ERR_SSL_VERSION_OR_CIPHER_MISMATCH`** → często lokalny VPN/antywirus filtrujący HTTPS. Sprawdź bez VPN, w innej przeglądarce lub na telefonie (LTE). Sam endpoint Workera powinien odpowiadać `{"count": n}` pod `GET /`.
+* **Widzisz `POST` w Network** → przeglądarka używa starego `app.js`. Wymuś *Disable cache* i zwiększ `?v=`.
+* **`ERR_SSL_VERSION_OR_CIPHER_MISMATCH`** → zwykle lokalny VPN/antywirus; sprawdź na LTE/innym urządzeniu.
 * **Brak licznika w DOM** → upewnij się, że istnieje `<span id="views">` zanim zainicjuje się skrypt.
+
+---
+
+## 📬 Web3Forms — szczegóły implementacyjne
+
+Formularz kontaktowy korzysta z **Web3Forms** poprzez REST API i jest zaimplementowany w czystym JS. Konfiguracja endpointu pozostaje w **HTML** (atrybut `action`), dzięki czemu klucze/URL nie są zakodowane w pliku JS.
+
+**Elementy:**
+
+* `#contactForm` — formularz z atrybutem `action` wskazującym na endpoint Web3Forms,
+* `#formStatus` — element komunikatów (klasy `ok`/`err`).
+
+**Logika (z `app.js`):**
+
+* blokada domyślnego `submit` i komunikat „Wysyłanie…”,
+* dynamiczny temat z pola `name`: `Wiadomość ze strony — ${name || 'Kontakt'}`,
+* konwersja `FormData` → JSON: `Object.fromEntries(fd.entries())`,
+* wysyłka `POST` na `form.action` z nagłówkami `Content-Type: application/json`, `Accept: application/json`,
+* interpretacja odpowiedzi: `data.success === true` → reset + komunikat powodzenia, w przeciwnym razie komunikat błędu.
+
+**Fragment kodu (bez danych wrażliwych):**
+
+```js
+const form = document.getElementById('contactForm');
+const statusEl = document.getElementById('formStatus');
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  statusEl.textContent = 'Wysyłanie…';
+  statusEl.classList.remove('ok', 'err');
+  const fd = new FormData(form);
+  const name = (form.elements['name']?.value || '').trim();
+  fd.append('subject', `Wiadomość ze strony — ${name || 'Kontakt'}`);
+  const json = Object.fromEntries(fd.entries());
+  const res = await fetch(form.action, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+    body: JSON.stringify(json)
+  });
+  const data = await res.json();
+  if (data.success) { statusEl.textContent = 'Dziękuję! Wiadomość została wysłana.'; statusEl.classList.add('ok'); form.reset(); }
+  else { statusEl.textContent = 'Nie udało się wysłać. Spróbuj ponownie.'; statusEl.classList.add('err'); }
+});
+```
+
+> Uwaga: w README celowo pomijamy szczegóły takie jak klucze/URL Web3Forms.
 
 ---
 
@@ -143,9 +122,9 @@ Responsive, modern, multilingual portfolio in HTML, CSS and JavaScript showcasin
 * ⏱ **Digital clock** (bottom‑right)
 * 👁️ **Page view counter (Cloudflare Workers + KV)** — increment via **GET `/hit`**, read via **GET `/`**
 * 📂 Sections: *About*, *Skills*, *Experience*, *Education*, *Certificates*, *Projects*, *Contact*
-* 🔗 Links to **[GitHub](https://github.com/169724)**, **LinkedIn**, **Imgur**
+* 🔗 Links to GitHub, LinkedIn, Imgur
 * 📄 Downloadable PDF CV
-* 📬 **Contact form powered by [Web3Forms](https://web3forms.com/)**
+* 📬 **Contact form powered by Web3Forms**
 * 🌌 Visual add‑ons: starry background, scroll animations, 3D tilt, scroll progress bar, typewriter effect
 
 ### 🛠 Tech stack
@@ -165,9 +144,18 @@ open index.html  # or use a simple static server
 
 1. Create a KV namespace (e.g., `pagecv-views`).
 2. Bind it to the Worker as `VIEWS_KV`.
-3. Deploy the Worker (code above).
-4. Set `CF_API` in `app.js` and add `<span id="views">` in the HTML.
+3. Deploy the Worker (code described above).
+4. Set `CF_API` in `app.js` and add `<span id="views">` in HTML.
 5. Bust caches on GitHub Pages with `app.js?v=...`.
+
+### 📬 Web3Forms — implementation details
+
+* The endpoint is configured in the form’s **`action`** attribute (keeps sensitive data out of JS),
+* The script prevents default submission and shows a sending message,
+* It builds a **dynamic subject** using the `name` field,
+* Converts **FormData → JSON** with `Object.fromEntries`,
+* Sends a **JSON POST** to `form.action` with `Content-Type` and `Accept` set to `application/json`,
+* Reads `data.success` to update UI and reset the form on success (adds `ok`/`err` classes on the status element).
 
 ---
 

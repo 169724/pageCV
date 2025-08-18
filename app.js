@@ -104,7 +104,7 @@ setInterval(tick,1000); tick();
 
 // =====================
 // Views counter for GitHub Pages
-// Robust: tries CountAPI primary, then GET fallback, then CORS proxy
+// Robust: CountAPI (hit→get) → proxy → SeeYouFarm (SVG) → proxy SVG
 // =====================
 (async function(){
   const el = document.getElementById('views');
@@ -115,48 +115,75 @@ setInterval(tick,1000); tick();
 
   const primaryHit = `https://api.countapi.xyz/hit/${NS}/${KEY}`;
   const primaryGet = `https://api.countapi.xyz/get/${NS}/${KEY}`;
-  const proxy = (u)=>`https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`; // last‑resort CORS/DNS bypass
+  const allorigins = (u)=>`https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`; // CORS/DNS bypass
 
-  const render = (v)=>{ if(typeof v === 'number') el.textContent = `👁️ ${v}`; };
+  // SeeYouFarm badge as a cross‑provider fallback (works on GH Pages)
+  const pageURL = 'https://169724.github.io/pageCV/';
+  const syfHit = `https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=${encodeURIComponent(pageURL)}&count_bg=%232F80ED&title_bg=%2356CCF2&icon=&icon_color=%23E8ECF1&title=Views&edge_flat=false`;
+
+  const render = (v)=>{ if(Number.isFinite(v)) el.textContent = `👁️ ${v}`; };
 
   async function fetchJSON(url){
     const ctrl = new AbortController();
-    const t = setTimeout(()=>ctrl.abort(), 6000);
+    const t = setTimeout(()=>ctrl.abort(), 7000);
     try{
       const r = await fetch(url, {cache:'no-store', mode:'cors', signal:ctrl.signal});
       return await r.json();
     }finally{ clearTimeout(t); }
   }
 
-  // 1) Try increment (HIT)
+  async function fetchText(url){
+    const ctrl = new AbortController();
+    const t = setTimeout(()=>ctrl.abort(), 7000);
+    try{
+      const r = await fetch(url, {cache:'no-store', mode:'cors', signal:ctrl.signal});
+      return await r.text();
+    }finally{ clearTimeout(t); }
+  }
+
+  // Try 1: CountAPI HIT
   try{
     const data = await fetchJSON(primaryHit);
     render(data.value);
   }catch(err){
-    console.warn('Counter HIT failed, trying GET…', err);
-    // 2) Try just read (GET)
+    console.warn('Counter: HIT failed → GET…', err);
+    // Try 2: CountAPI GET
     try{
       const data2 = await fetchJSON(primaryGet);
       render(data2.value);
     }catch(err2){
-      console.warn('Counter GET failed, trying proxy…', err2);
-      // 3) Last resort: CORS/DNS proxy
+      console.warn('Counter: GET failed → proxy…', err2);
+      // Try 3: CountAPI via proxy (HIT then GET)
       try{
-        const data3 = await fetchJSON(proxy(primaryHit));
-        render(data3.value);
+        const p1 = await fetchJSON(allorigins(primaryHit));
+        render(p1.value);
       }catch(err3){
         try{
-          const data4 = await fetchJSON(proxy(primaryGet));
-          render(data4.value);
+          const p2 = await fetchJSON(allorigins(primaryGet));
+          render(p2.value);
         }catch(err4){
-          console.error('Counter total failure:', err4);
-          el.textContent = '👁️ —';
+          console.warn('Counter: CountAPI totally blocked → SeeYouFarm SVG…', err4);
+          // Try 4: SeeYouFarm SVG (parse number from SVG)
+          try{
+            const svg = await fetchText(syfHit);
+            const num = (svg.match(/>([0-9][0-9,]*)<\/text>/) || [,''])[1]?.replace(/,/g,'');
+            render(parseInt(num,10));
+          }catch(err5){
+            try{
+              const svg2 = await fetchText(allorigins(syfHit));
+              const num2 = (svg2.match(/>([0-9][0-9,]*)<\/text>/) || [,''])[1]?.replace(/,/g,'');
+              render(parseInt(num2,10));
+            }catch(err6){
+              console.error('Counter: all providers failed', err6);
+              el.textContent = '👁️ —';
+            }
+          }
         }
       }
     }
   }
 
-  // Live refresh co 30 s (GET, nie zwiększa)
+  // Live refresh co 30 s (best‑effort GET without increment)
   setInterval(async ()=>{
     try{
       const j = await fetchJSON(primaryGet);

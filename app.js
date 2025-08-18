@@ -102,44 +102,62 @@ const clockEl = document.getElementById('clockFloat');
 function tick(){ const d=new Date(); const h=String(d.getHours()).padStart(2,'0'); const m=String(d.getMinutes()).padStart(2,'0'); const s=String(d.getSeconds()).padStart(2,'0'); if(clockEl) clockEl.textContent=`🕒 ${h}:${m}:${s}`; }
 setInterval(tick,1000); tick();
 
-// =====================
-// Views counter via Cloudflare Worker + KV (real backend, no localStorage)
-// =====================
+// =============================================================================
+// REAL‑TIME VIEWS COUNTER — Firebase (Firestore + Cloud Function onCall)
+//  - live update przez onSnapshot (WebSocket)
+//  - zliczanie tylko w funkcji (transakcja) — front NIGDY nie zapisuje
+//  - działa na GitHub Pages bez własnego serwera
+// =============================================================================
 (async function(){
-  const el = document.getElementById('views');
-  if(!el) return;
+  const pill = document.getElementById('views');
+  if(!pill) return;
 
-  // ⬇️ USTAW SWÓJ URL WORKERA (np. https://pagecv-counter.yourname.workers.dev/)
-  const API = 'https://YOUR-WORKER-URL/';
-
-  const render = (v)=>{ if(Number.isFinite(v)) el.textContent = `👁️ ${v}`; else el.textContent = '👁️ —'; };
-
-  async function hit(){
-    try{
-      const res = await fetch(API, {
-        method: 'POST',
-        mode: 'cors',
-        cache: 'no-store',
-        headers: { 'Content-Type': 'application/json' },
-        body: '{}'
-      });
-      const data = await res.json();
-      if (typeof data.count === 'number') render(data.count);
-    }catch(err){ console.error('Counter POST failed', err); }
+  // ---- 1) Ładowanie SDK Firebase (wersja *compat* przez <script> dynamicznie) ----
+  function loadScript(src){
+    return new Promise((res, rej)=>{ const s=document.createElement('script'); s.src=src; s.defer=true; s.onload=res; s.onerror=()=>rej(new Error('Load failed '+src)); document.head.appendChild(s); });
+  }
+  if(!window.firebase){
+    // używamy *compat*, żeby nie wymagać <script type="module">
+    const base = 'https://www.gstatic.com/firebasejs/10.12.0';
+    await loadScript(`${base}/firebase-app-compat.js`);
+    await loadScript(`${base}/firebase-firestore-compat.js`);
+    await loadScript(`${base}/firebase-functions-compat.js`);
   }
 
-  async function read(){
-    try{
-      const res = await fetch(API, { mode:'cors', cache:'no-store' });
-      const data = await res.json();
-      if (typeof data.count === 'number') render(data.count);
-    }catch(err){ console.error('Counter GET failed', err); }
-  }
+  // ---- 2) Twoja konfiguracja Firebase (WYPEŁNIJ!) ----
+  const firebaseConfig = {
+    apiKey:  "AIzaSyBm1rlBdzNKf7js25Ftsi1o3XxYrOF5Hkk",
+    authDomain: "pagecv-7e95d.firebaseapp.com",
+    projectId: "pagecv-7e95d",
+    appId: "1:287742773530:web:e7681f52b750e160ed04a3",
+    // opcjonalnie: measurementId, storageBucket, etc.
+  };
 
-  // Najpierw inkrementacja, potem odczyt, potem live refresh co 30s
-  await hit();
-  await read();
-  setInterval(read, 30000);
+  // ---- 3) Init ----
+  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  // Podmień region na swój przy deployu funkcji (domyślnie us-central1)
+  const functions = firebase.app().functions('us-central1');
+
+  // Ścieżka dokumentu z licznikiem
+  const DOC_PATH = 'counters/pagecv-index';
+
+  // ---- 4) Subskrypcja realtime (odczyt) ----
+  function render(n){ pill.textContent = `👁️ ${Number(n) || 0}`; }
+  try{
+    db.doc(DOC_PATH).onSnapshot((snap)=>{
+      const n = (snap.exists && typeof snap.data().count === 'number') ? snap.data().count : 0;
+      render(n);
+    }, (err)=>{
+      console.error('Firestore onSnapshot error', err);
+    });
+  }catch(e){ console.error('Subskrypcja nie powiodła się', e); }
+
+  // ---- 5) Inkrementacja przez funkcję (bezpośrednio po wejściu) ----
+  try{
+    const hit = functions.httpsCallable('viewsHit');
+    await hit();
+  }catch(e){ console.error('viewsHit error', e); }
 })();
 
 // =====================

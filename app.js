@@ -103,60 +103,43 @@ function tick(){ const d=new Date(); const h=String(d.getHours()).padStart(2,'0'
 setInterval(tick,1000); tick();
 
 // =====================
-// Views counter for GitHub Pages
-// Robust: CountAPI (hit→get) → proxy → SeeYouFarm (SVG) → proxy SVG
+// Views counter via Cloudflare Worker + KV (real backend, no localStorage)
 // =====================
 (async function(){
-  const wrap = document.getElementById('views');
-  if(!wrap) return;
+  const el = document.getElementById('views');
+  if(!el) return;
 
-  const elText = document.getElementById('viewsText');
-  const elImg  = document.getElementById('viewsImg');
+  // ⬇️ USTAW SWÓJ URL WORKERA (np. https://pagecv-counter.yourname.workers.dev/)
+  const API = 'https://YOUR-WORKER-URL/';
 
-  const NS  = 'pagecv_169724';
-  const KEY = 'index';
+  const render = (v)=>{ if(Number.isFinite(v)) el.textContent = `👁️ ${v}`; else el.textContent = '👁️ —'; };
 
-  const hitURL = `https://api.countapi.xyz/hit/${NS}/${KEY}`;
-  const getURL = `https://api.countapi.xyz/get/${NS}/${KEY}`;
-
-  const renderText = (v) => { if (elText) elText.textContent = String(v); };
-
-  // Fallback IMG (działa zawsze, bo <img> nie podlega CORS)
-  const useImageFallback = () => {
-    if (!elImg) return;
-    const pageURL = 'https://169724.github.io/pageCV/'; // URL strony
-    const badge = `https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=${encodeURIComponent(pageURL)}&count_bg=%232F80ED&title_bg=%2356CCF2&icon=&icon_color=%23E8ECF1&title=Views&edge_flat=false&time=${Date.now()}`;
-    elImg.src = badge;
-    elImg.style.display = 'inline-block';
-    if (elText) elText.style.display = 'none';
-  };
-
-  // Spróbuj CountAPI (increment na starcie)
-  try {
-    const res = await fetch(hitURL, { cache: 'no-store', mode: 'cors' });
-    const data = await res.json();                 // jeśli CORS/DNS zawiedzie → wyleci w catch
-    if (typeof data.value === 'number') {
-      renderText(data.value);
-    } else {
-      throw new Error('Bad payload');
-    }
-  } catch (e) {
-    // DNS/CORS/Adblock → przełącz na obrazek
-    useImageFallback();
-    return; // kończymy – obrazek już pokazuje licznik
+  async function hit(){
+    try{
+      const res = await fetch(API, {
+        method: 'POST',
+        mode: 'cors',
+        cache: 'no-store',
+        headers: { 'Content-Type': 'application/json' },
+        body: '{}'
+      });
+      const data = await res.json();
+      if (typeof data.count === 'number') render(data.count);
+    }catch(err){ console.error('Counter POST failed', err); }
   }
 
-  // Live refresh co 30 s (bez nabijania)
-  setInterval(async () => {
-    try {
-      const r = await fetch(getURL, { cache: 'no-store', mode: 'cors' });
-      const j = await r.json();
-      if (typeof j.value === 'number') renderText(j.value);
-    } catch (_) {
-      // jeśli w trakcie sesji zacznie blokować – przełącz się na obrazek
-      useImageFallback();
-    }
-  }, 30000);
+  async function read(){
+    try{
+      const res = await fetch(API, { mode:'cors', cache:'no-store' });
+      const data = await res.json();
+      if (typeof data.count === 'number') render(data.count);
+    }catch(err){ console.error('Counter GET failed', err); }
+  }
+
+  // Najpierw inkrementacja, potem odczyt, potem live refresh co 30s
+  await hit();
+  await read();
+  setInterval(read, 30000);
 })();
 
 // =====================
@@ -167,7 +150,9 @@ document.querySelectorAll('[data-i18n]').forEach(el=>{ originals[el.getAttribute
 const phOriginals = {};
 document.querySelectorAll('[data-i18n-ph]').forEach(el=>{ phOriginals[el.getAttribute('data-i18n-ph')] = el.getAttribute('placeholder'); });
 
-// Full EN dictionary
+// =====================
+// EN dictionary (full)
+// =====================
 const i18n = {
   en:{
     'menu.about':'About', 'menu.skills':'Skills', 'menu.exp':'Experience', 'menu.edu':'Education', 'menu.certs':'Certificates', 'menu.projects':'Projects', 'menu.contact':'Contact',
@@ -326,4 +311,3 @@ setLang(saved);
     window.setLang = function(lang){ origSetLang(lang); typewrite(prefixEl?.dataset[lang==='en'?'en':'pl'] || ''); };
   }
 })();
-

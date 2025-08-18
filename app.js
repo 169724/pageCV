@@ -105,6 +105,7 @@ setInterval(tick,1000); tick();
 // =====================
 // Views counter for GitHub Pages (CountAPI — increment on every load + live refresh)
 // =====================
+
 (async function(){
   const el = document.getElementById('views');
   if(!el) return;
@@ -309,3 +310,4 @@ setLang(saved);
     window.setLang = function(lang){ origSetLang(lang); typewrite(prefixEl?.dataset[lang==='en'?'en':'pl'] || ''); };
   }
 })();
+

@@ -103,31 +103,43 @@ function tick(){ const d=new Date(); const h=String(d.getHours()).padStart(2,'0'
 setInterval(tick,1000); tick();
 
 // =====================
-// Views counter for GitHub Pages (CountAPI – no backend; hit once per session)
+// Views counter for GitHub Pages (CountAPI — increment on every load + live refresh)
 // =====================
 (async function(){
   const el = document.getElementById('views');
   if(!el) return;
 
-  const SESSION_FLAG = 'dm_viewed_session';
-  const firstInSession = !sessionStorage.getItem(SESSION_FLAG);
-
   const NS = 'pagecv_169724';  // namespace (custom)
   const KEY = 'index';          // single key for the whole page
-  const url = firstInSession
-    ? `https://api.countapi.xyz/hit/${NS}/${KEY}`
-    : `https://api.countapi.xyz/get/${NS}/${KEY}`;
 
+  // Helper: render value
+  const render = (v)=>{ if(typeof v === 'number') el.textContent = `👁️ ${v}`; };
+
+  // 1) Increment on each load (so widać zmianę od razu)
   try{
-    const res = await fetch(url, { cache: 'no-store' });
+    const res = await fetch(`https://api.countapi.xyz/hit/${NS}/${KEY}`, { cache: 'no-store', mode: 'cors' });
     const data = await res.json();
-    if (typeof data.value === 'number') {
-      el.textContent = `👁️ ${data.value}`;
-      if (firstInSession) sessionStorage.setItem(SESSION_FLAG, '1');
-    }
+    render(data.value);
   }catch(err){
-    console.error('Counter error:', err);
+    console.error('Counter hit error:', err);
+    // Fallback to just read current value
+    try{
+      const res2 = await fetch(`https://api.countapi.xyz/get/${NS}/${KEY}`, { cache: 'no-store', mode: 'cors' });
+      const data2 = await res2.json();
+      render(data2.value);
+    }catch(e){
+      el.textContent = '👁️ —';
+    }
   }
+
+  // 2) Live refresh co 30s (pobiera, NIE zwiększa)
+  setInterval(async ()=>{
+    try{
+      const r = await fetch(`https://api.countapi.xyz/get/${NS}/${KEY}`, { cache: 'no-store', mode: 'cors' });
+      const j = await r.json();
+      render(j.value);
+    }catch(e){ /* silent */ }
+  }, 30000);
 })();
 
 // =====================

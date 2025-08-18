@@ -173,4 +173,4 @@ open index.html  # or use a simple static server
 
 ## Licencja
 
-Projekt może korzystać z licencji **MIT** (dodaj plik `LICENSE` jeśli nie został dołączony).
+Projekt korzysta z licencji **MIT** 

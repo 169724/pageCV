@@ -112,9 +112,8 @@ setInterval(tick,1000); tick();
   const pill = document.getElementById('views');
   if(!pill) return;
 
-  // TODO: PODMIEŃ na adres swojego Workera (KOŃCOWY "/" JEST WYMAGANY)
-  // Przykład: 'https://pagecv-counter.twoj-nick.workers.dev/' albo 'https://counter.twojadomena.pl/'
-  const CF_API = 'http://pagecv-counter.greenowsky12.workers.dev/';
+  // ✅ Adres Workera w Cloudflare (HTTPS, z końcowym "/")
+  const CF_API = 'https://pagecv-counter.greenowsky12.workers.dev/';
   const REFRESH_MS = 30_000;
 
   const render = (n)=>{ pill.textContent = `👁️ ${Number(n)||0}`; };
@@ -142,14 +141,11 @@ setInterval(tick,1000); tick();
       render(data.count);
     }catch(err){
       console.warn('Counter POST failed:', err);
-      // Bez blokowania UI: spróbuj wysłać beacon
       try{ if(navigator.sendBeacon){ navigator.sendBeacon(CF_API, new Blob(['{}'], {type:'application/json'})); } }catch(_){ }
-      // Pokaż przynajmniej bieżący stan
       getCount();
     }
   }
 
-  // Inkrementuj 1x po wejściu i odświeżaj okresowo
   hit();
   setInterval(getCount, REFRESH_MS);
 })();
@@ -307,7 +303,7 @@ setLang(saved);
 
   // 3D tilt for buttons/badges
   function addTilt(el){
-    el.addEventListener('mousemove', (e)=>{ const r = el.getBoundingClientRect(); const x = (e.clientX - r.left)/r.width - .5; const y = (e.clientY - r.top)/r.height - .5; el.style.transform = `perspective(700px) rotateX(${-y*8}deg) rotateY(${x*8}deg)`; });
+    el.addEventListener('mousemove', (e)=>{ const r = el.getBoundingClientRect(); const x = (e.clientX - r.left)/r.width - .5; const y = (e.clientY - r.top)/r.height - .5; el.style.transform = `perspective(700px) rotateX(${ -y*8 }deg) rotateY(${ x*8 }deg)`; });
     el.addEventListener('mouseleave', ()=>{ el.style.transform='perspective(700px) rotateX(0) rotateY(0)'; });
   }
   document.querySelectorAll('.tilt, .badge.tilt').forEach(addTilt);

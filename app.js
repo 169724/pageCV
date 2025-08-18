@@ -103,61 +103,55 @@ function tick(){ const d=new Date(); const h=String(d.getHours()).padStart(2,'0'
 setInterval(tick,1000); tick();
 
 // =============================================================================
-// REAL‑TIME VIEWS COUNTER — Firebase (Firestore + Cloud Function onCall)
-//  - live update przez onSnapshot (WebSocket)
-//  - zliczanie tylko w funkcji (transakcja) — front NIGDY nie zapisuje
-//  - działa na GitHub Pages bez własnego serwera
+// REAL‑TIME VIEWS COUNTER — Cloudflare Worker + KV (bez localStorage)
+//  - POST: inkrementacja w KV
+//  - GET: odczyt aktualnej wartości
+//  - auto-refresh co 30s (GET)
 // =============================================================================
-(async function(){
+(function(){
   const pill = document.getElementById('views');
   if(!pill) return;
 
-  // ---- 1) Ładowanie SDK Firebase (wersja *compat* przez <script> dynamicznie) ----
-  function loadScript(src){
-    return new Promise((res, rej)=>{ const s=document.createElement('script'); s.src=src; s.defer=true; s.onload=res; s.onerror=()=>rej(new Error('Load failed '+src)); document.head.appendChild(s); });
+  // TODO: PODMIEŃ na adres swojego Workera (KOŃCOWY "/" JEST WYMAGANY)
+  // Przykład: 'https://pagecv-counter.twoj-nick.workers.dev/' albo 'https://counter.twojadomena.pl/'
+  const CF_API = 'http://pagecv-counter.greenowsky12.workers.dev/';
+  const REFRESH_MS = 30_000;
+
+  const render = (n)=>{ pill.textContent = `👁️ ${Number(n)||0}`; };
+
+  async function getCount(){
+    try{
+      const r = await fetch(CF_API, { method:'GET', mode:'cors', cache:'no-store' });
+      if(!r.ok) throw new Error(`GET ${r.status}`);
+      const data = await r.json();
+      render(data.count);
+      return data.count;
+    }catch(err){ console.warn('Counter GET failed:', err); }
   }
-  if(!window.firebase){
-    // używamy *compat*, żeby nie wymagać <script type="module">
-    const base = 'https://www.gstatic.com/firebasejs/10.12.0';
-    await loadScript(`${base}/firebase-app-compat.js`);
-    await loadScript(`${base}/firebase-firestore-compat.js`);
-    await loadScript(`${base}/firebase-functions-compat.js`);
+
+  async function hit(){
+    try{
+      const r = await fetch(CF_API, {
+        method:'POST',
+        mode:'cors',
+        headers:{ 'Content-Type':'application/json' },
+        body: '{}' // treść nieistotna — Worker zwiększa licznik na podstawie metody
+      });
+      if(!r.ok) throw new Error(`POST ${r.status}`);
+      const data = await r.json();
+      render(data.count);
+    }catch(err){
+      console.warn('Counter POST failed:', err);
+      // Bez blokowania UI: spróbuj wysłać beacon
+      try{ if(navigator.sendBeacon){ navigator.sendBeacon(CF_API, new Blob(['{}'], {type:'application/json'})); } }catch(_){ }
+      // Pokaż przynajmniej bieżący stan
+      getCount();
+    }
   }
 
-  // ---- 2) Twoja konfiguracja Firebase (WYPEŁNIJ!) ----
-  const firebaseConfig = {
-    apiKey:  "AIzaSyBm1rlBdzNKf7js25Ftsi1o3XxYrOF5Hkk",
-    authDomain: "pagecv-7e95d.firebaseapp.com",
-    projectId: "pagecv-7e95d",
-    appId: "1:287742773530:web:e7681f52b750e160ed04a3",
-    // opcjonalnie: measurementId, storageBucket, etc.
-  };
-
-  // ---- 3) Init ----
-  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-  // Podmień region na swój przy deployu funkcji (domyślnie us-central1)
-  const functions = firebase.app().functions('us-central1');
-
-  // Ścieżka dokumentu z licznikiem
-  const DOC_PATH = 'counters/pagecv-index';
-
-  // ---- 4) Subskrypcja realtime (odczyt) ----
-  function render(n){ pill.textContent = `👁️ ${Number(n) || 0}`; }
-  try{
-    db.doc(DOC_PATH).onSnapshot((snap)=>{
-      const n = (snap.exists && typeof snap.data().count === 'number') ? snap.data().count : 0;
-      render(n);
-    }, (err)=>{
-      console.error('Firestore onSnapshot error', err);
-    });
-  }catch(e){ console.error('Subskrypcja nie powiodła się', e); }
-
-  // ---- 5) Inkrementacja przez funkcję (bezpośrednio po wejściu) ----
-  try{
-    const hit = functions.httpsCallable('viewsHit');
-    await hit();
-  }catch(e){ console.error('viewsHit error', e); }
+  // Inkrementuj 1x po wejściu i odświeżaj okresowo
+  hit();
+  setInterval(getCount, REFRESH_MS);
 })();
 
 // =====================

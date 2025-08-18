@@ -1,5 +1,5 @@
 # pageCV
-Personal responsive portfolio website with PL/EN support, clock, visit counter and modern design.
+Personal responsive portfolio website with PL/EN support, clock, visit counter, contact form via Web3Forms, and modern design.
 
 ## PL
 
@@ -18,13 +18,15 @@ Projekt zaprojektowany z myślą o estetyce, czytelności i funkcjonalności na 
 - 📂 Sekcje: *O mnie*, *Umiejętności*, *Doświadczenie*, *Edukacja*, *Certyfikaty*, *Projekty*, *Kontakt*
 - 🔗 Linki do **[GitHub](https://github.com/169724)**, **LinkedIn** i **Imgur**
 - 📄 Pobieranie CV w formacie PDF
+- 📬 **Formularz kontaktowy obsługiwany przez [Web3Forms](https://web3forms.com/)** (zamiast `mailto:`)
+- 🌌 Dodatki wizualne: tło z gwiazdami, animacje scrollowania, efekt 3D dla przycisków, progres bar przewijania, pisanie maszynowe
 
 ---
 
 ## 🛠 Technologie
 - HTML5  
-- CSS3 (Flexbox, Grid, Media Queries)  
-- JavaScript (ES6+, Intersection Observer, localStorage)
+- CSS3 (Flexbox, Grid, Media Queries, animacje)  
+- JavaScript (ES6+, Intersection Observer, localStorage, fetch API dla Web3Forms)
 
 ---
 
@@ -32,6 +34,10 @@ Projekt zaprojektowany z myślą o estetyce, czytelności i funkcjonalności na 
 1. Sklonuj repozytorium:
    ```bash
    git clone https://github.com/169724/pageCV.git
+   ```
+2. Otwórz `index.html` w przeglądarce.
+
+---
 
 ## ENG
 
@@ -50,13 +56,15 @@ Designed with a focus on aesthetics, readability, and functionality across all d
 - 📂 Sections: *About*, *Skills*, *Experience*, *Education*, *Certificates*, *Projects*, *Contact*
 - 🔗 Links to **[GitHub](https://github.com/169724)**, **LinkedIn**, and **Imgur**
 - 📄 Downloadable CV in PDF format
+- 📬 **Contact form powered by [Web3Forms](https://web3forms.com/)** (instead of `mailto:`)
+- 🌌 Visual add-ons: starry background, scroll animations, 3D button tilt, scroll progress bar, typewriter effect
 
 ---
 
 ## 🛠 Technologies
 - HTML5  
-- CSS3 (Flexbox, Grid, Media Queries)  
-- JavaScript (ES6+, Intersection Observer, localStorage)  
+- CSS3 (Flexbox, Grid, Media Queries, animations)  
+- JavaScript (ES6+, Intersection Observer, localStorage, fetch API for Web3Forms)
 
 ---
 
@@ -64,3 +72,5 @@ Designed with a focus on aesthetics, readability, and functionality across all d
 1. Clone the repository:
    ```bash
    git clone https://github.com/169724/pageCV.git
+   ```
+2. Open `index.html` in your browser.

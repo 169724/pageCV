@@ -107,88 +107,55 @@ setInterval(tick,1000); tick();
 // Robust: CountAPI (hit→get) → proxy → SeeYouFarm (SVG) → proxy SVG
 // =====================
 (async function(){
-  const el = document.getElementById('views');
-  if(!el) return;
+  const wrap = document.getElementById('views');
+  if(!wrap) return;
 
-  const NS = 'pagecv_169724';  // namespace (custom)
-  const KEY = 'index';          // single key for the whole page
+  const elText = document.getElementById('viewsText');
+  const elImg  = document.getElementById('viewsImg');
 
-  const primaryHit = `https://api.countapi.xyz/hit/${NS}/${KEY}`;
-  const primaryGet = `https://api.countapi.xyz/get/${NS}/${KEY}`;
-  const allorigins = (u)=>`https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`; // CORS/DNS bypass
+  const NS  = 'pagecv_169724';
+  const KEY = 'index';
 
-  // SeeYouFarm badge as a cross‑provider fallback (works on GH Pages)
-  const pageURL = 'https://169724.github.io/pageCV/';
-  const syfHit = `https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=${encodeURIComponent(pageURL)}&count_bg=%232F80ED&title_bg=%2356CCF2&icon=&icon_color=%23E8ECF1&title=Views&edge_flat=false`;
+  const hitURL = `https://api.countapi.xyz/hit/${NS}/${KEY}`;
+  const getURL = `https://api.countapi.xyz/get/${NS}/${KEY}`;
 
-  const render = (v)=>{ if(Number.isFinite(v)) el.textContent = `👁️ ${v}`; };
+  const renderText = (v) => { if (elText) elText.textContent = String(v); };
 
-  async function fetchJSON(url){
-    const ctrl = new AbortController();
-    const t = setTimeout(()=>ctrl.abort(), 7000);
-    try{
-      const r = await fetch(url, {cache:'no-store', mode:'cors', signal:ctrl.signal});
-      return await r.json();
-    }finally{ clearTimeout(t); }
-  }
+  // Fallback IMG (działa zawsze, bo <img> nie podlega CORS)
+  const useImageFallback = () => {
+    if (!elImg) return;
+    const pageURL = 'https://169724.github.io/pageCV/'; // URL strony
+    const badge = `https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=${encodeURIComponent(pageURL)}&count_bg=%232F80ED&title_bg=%2356CCF2&icon=&icon_color=%23E8ECF1&title=Views&edge_flat=false&time=${Date.now()}`;
+    elImg.src = badge;
+    elImg.style.display = 'inline-block';
+    if (elText) elText.style.display = 'none';
+  };
 
-  async function fetchText(url){
-    const ctrl = new AbortController();
-    const t = setTimeout(()=>ctrl.abort(), 7000);
-    try{
-      const r = await fetch(url, {cache:'no-store', mode:'cors', signal:ctrl.signal});
-      return await r.text();
-    }finally{ clearTimeout(t); }
-  }
-
-  // Try 1: CountAPI HIT
-  try{
-    const data = await fetchJSON(primaryHit);
-    render(data.value);
-  }catch(err){
-    console.warn('Counter: HIT failed → GET…', err);
-    // Try 2: CountAPI GET
-    try{
-      const data2 = await fetchJSON(primaryGet);
-      render(data2.value);
-    }catch(err2){
-      console.warn('Counter: GET failed → proxy…', err2);
-      // Try 3: CountAPI via proxy (HIT then GET)
-      try{
-        const p1 = await fetchJSON(allorigins(primaryHit));
-        render(p1.value);
-      }catch(err3){
-        try{
-          const p2 = await fetchJSON(allorigins(primaryGet));
-          render(p2.value);
-        }catch(err4){
-          console.warn('Counter: CountAPI totally blocked → SeeYouFarm SVG…', err4);
-          // Try 4: SeeYouFarm SVG (parse number from SVG)
-          try{
-            const svg = await fetchText(syfHit);
-            const num = (svg.match(/>([0-9][0-9,]*)<\/text>/) || [,''])[1]?.replace(/,/g,'');
-            render(parseInt(num,10));
-          }catch(err5){
-            try{
-              const svg2 = await fetchText(allorigins(syfHit));
-              const num2 = (svg2.match(/>([0-9][0-9,]*)<\/text>/) || [,''])[1]?.replace(/,/g,'');
-              render(parseInt(num2,10));
-            }catch(err6){
-              console.error('Counter: all providers failed', err6);
-              el.textContent = '👁️ —';
-            }
-          }
-        }
-      }
+  // Spróbuj CountAPI (increment na starcie)
+  try {
+    const res = await fetch(hitURL, { cache: 'no-store', mode: 'cors' });
+    const data = await res.json();                 // jeśli CORS/DNS zawiedzie → wyleci w catch
+    if (typeof data.value === 'number') {
+      renderText(data.value);
+    } else {
+      throw new Error('Bad payload');
     }
+  } catch (e) {
+    // DNS/CORS/Adblock → przełącz na obrazek
+    useImageFallback();
+    return; // kończymy – obrazek już pokazuje licznik
   }
 
-  // Live refresh co 30 s (best‑effort GET without increment)
-  setInterval(async ()=>{
-    try{
-      const j = await fetchJSON(primaryGet);
-      render(j.value);
-    }catch(e){ /* cicho */ }
+  // Live refresh co 30 s (bez nabijania)
+  setInterval(async () => {
+    try {
+      const r = await fetch(getURL, { cache: 'no-store', mode: 'cors' });
+      const j = await r.json();
+      if (typeof j.value === 'number') renderText(j.value);
+    } catch (_) {
+      // jeśli w trakcie sesji zacznie blokować – przełącz się na obrazek
+      useImageFallback();
+    }
   }, 30000);
 })();
 
@@ -359,3 +326,4 @@ setLang(saved);
     window.setLang = function(lang){ origSetLang(lang); typewrite(prefixEl?.dataset[lang==='en'?'en':'pl'] || ''); };
   }
 })();
+

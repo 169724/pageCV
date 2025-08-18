@@ -103,9 +103,9 @@ function tick(){ const d=new Date(); const h=String(d.getHours()).padStart(2,'0'
 setInterval(tick,1000); tick();
 
 // =====================
-// Views counter for GitHub Pages (CountAPI — increment on every load + live refresh)
+// Views counter for GitHub Pages
+// Robust: tries CountAPI primary, then GET fallback, then CORS proxy
 // =====================
-
 (async function(){
   const el = document.getElementById('views');
   if(!el) return;
@@ -113,33 +113,55 @@ setInterval(tick,1000); tick();
   const NS = 'pagecv_169724';  // namespace (custom)
   const KEY = 'index';          // single key for the whole page
 
-  // Helper: render value
+  const primaryHit = `https://api.countapi.xyz/hit/${NS}/${KEY}`;
+  const primaryGet = `https://api.countapi.xyz/get/${NS}/${KEY}`;
+  const proxy = (u)=>`https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`; // last‑resort CORS/DNS bypass
+
   const render = (v)=>{ if(typeof v === 'number') el.textContent = `👁️ ${v}`; };
 
-  // 1) Increment on each load (so widać zmianę od razu)
+  async function fetchJSON(url){
+    const ctrl = new AbortController();
+    const t = setTimeout(()=>ctrl.abort(), 6000);
+    try{
+      const r = await fetch(url, {cache:'no-store', mode:'cors', signal:ctrl.signal});
+      return await r.json();
+    }finally{ clearTimeout(t); }
+  }
+
+  // 1) Try increment (HIT)
   try{
-    const res = await fetch(`https://api.countapi.xyz/hit/${NS}/${KEY}`, { cache: 'no-store', mode: 'cors' });
-    const data = await res.json();
+    const data = await fetchJSON(primaryHit);
     render(data.value);
   }catch(err){
-    console.error('Counter hit error:', err);
-    // Fallback to just read current value
+    console.warn('Counter HIT failed, trying GET…', err);
+    // 2) Try just read (GET)
     try{
-      const res2 = await fetch(`https://api.countapi.xyz/get/${NS}/${KEY}`, { cache: 'no-store', mode: 'cors' });
-      const data2 = await res2.json();
+      const data2 = await fetchJSON(primaryGet);
       render(data2.value);
-    }catch(e){
-      el.textContent = '👁️ —';
+    }catch(err2){
+      console.warn('Counter GET failed, trying proxy…', err2);
+      // 3) Last resort: CORS/DNS proxy
+      try{
+        const data3 = await fetchJSON(proxy(primaryHit));
+        render(data3.value);
+      }catch(err3){
+        try{
+          const data4 = await fetchJSON(proxy(primaryGet));
+          render(data4.value);
+        }catch(err4){
+          console.error('Counter total failure:', err4);
+          el.textContent = '👁️ —';
+        }
+      }
     }
   }
 
-  // 2) Live refresh co 30s (pobiera, NIE zwiększa)
+  // Live refresh co 30 s (GET, nie zwiększa)
   setInterval(async ()=>{
     try{
-      const r = await fetch(`https://api.countapi.xyz/get/${NS}/${KEY}`, { cache: 'no-store', mode: 'cors' });
-      const j = await r.json();
+      const j = await fetchJSON(primaryGet);
       render(j.value);
-    }catch(e){ /* silent */ }
+    }catch(e){ /* cicho */ }
   }, 30000);
 })();
 
@@ -310,4 +332,3 @@ setLang(saved);
     window.setLang = function(lang){ origSetLang(lang); typewrite(prefixEl?.dataset[lang==='en'?'en':'pl'] || ''); };
   }
 })();
-

@@ -103,24 +103,24 @@ function tick(){ const d=new Date(); const h=String(d.getHours()).padStart(2,'0'
 setInterval(tick,1000); tick();
 
 // =============================================================================
-// REAL‑TIME VIEWS COUNTER — Cloudflare Worker + KV (bez localStorage)
-//  - POST: inkrementacja w KV
-//  - GET: odczyt aktualnej wartości
+// REAL‑TIME VIEWS COUNTER — Cloudflare Worker + KV (GET-only)
+//  - GET /hit : inkrementacja w KV
+//  - GET /    : odczyt aktualnej wartości
 //  - auto-refresh co 30s (GET)
 // =============================================================================
 (function(){
   const pill = document.getElementById('views');
   if(!pill) return;
 
-  // ✅ Adres Workera w Cloudflare (HTTPS, z końcowym "/")
-  const CF_API = 'https://pagecv-counter.greenowsky12.workers.dev/';
+  // ✅ Adres Workera w Cloudflare (HTTPS, bez końcowego "/")
+  const CF_API = 'https://pagecv-counter.greenowsky12.workers.dev';
   const REFRESH_MS = 30_000;
 
   const render = (n)=>{ pill.textContent = `👁️ ${Number(n)||0}`; };
 
   async function getCount(){
     try{
-      const r = await fetch(CF_API, { method:'GET', mode:'cors', cache:'no-store' });
+      const r = await fetch(`${CF_API}/`, { method:'GET', mode:'cors', cache:'no-store' });
       if(!r.ok) throw new Error(`GET ${r.status}`);
       const data = await r.json();
       render(data.count);
@@ -130,18 +130,12 @@ setInterval(tick,1000); tick();
 
   async function hit(){
     try{
-      const r = await fetch(CF_API, {
-        method:'POST',
-        mode:'cors',
-        headers:{ 'Content-Type':'application/json' },
-        body: '{}' // treść nieistotna — Worker zwiększa licznik na podstawie metody
-      });
-      if(!r.ok) throw new Error(`POST ${r.status}`);
+      const r = await fetch(`${CF_API}/hit`, { method:'GET', mode:'cors', cache:'no-store' });
+      if(!r.ok) throw new Error(`HIT ${r.status}`);
       const data = await r.json();
       render(data.count);
     }catch(err){
-      console.warn('Counter POST failed:', err);
-      try{ if(navigator.sendBeacon){ navigator.sendBeacon(CF_API, new Blob(['{}'], {type:'application/json'})); } }catch(_){ }
+      console.warn('Counter HIT failed:', err);
       getCount();
     }
   }

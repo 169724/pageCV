@@ -1,7 +1,9 @@
 // Remove no-js class
 document.documentElement.classList.remove('no-js');
 
+// =====================
 // Drawer (hamburger)
+// =====================
 const burger = document.getElementById('burger');
 const drawer = document.getElementById('drawer');
 if (burger && drawer) {
@@ -18,7 +20,9 @@ if (burger && drawer) {
   }));
 }
 
+// =====================
 // Scroll reveal
+// =====================
 const io = new IntersectionObserver((entries) => {
   entries.forEach(e => {
     if (e.isIntersecting) { e.target.classList.add('on'); io.unobserve(e.target); }
@@ -26,7 +30,9 @@ const io = new IntersectionObserver((entries) => {
 }, { threshold: .12 });
 document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 
+// =====================
 // Scroll spy
+// =====================
 const sections = [...document.querySelectorAll('main section[id]')];
 const menu = document.getElementById('menu');
 const spy = new IntersectionObserver((entries) => {
@@ -42,7 +48,9 @@ const spy = new IntersectionObserver((entries) => {
 }, { rootMargin: "-50% 0px -45% 0px", threshold: 0 });
 sections.forEach(sec => spy.observe(sec));
 
-// ---- WEB3FORMS submit (instead of mailto) ----
+// =====================
+// WEB3FORMS submit (instead of mailto)
+// =====================
 const form = document.getElementById('contactForm');
 const statusEl = document.getElementById('formStatus');
 if (form) {
@@ -81,26 +89,56 @@ if (form) {
   });
 }
 
+// =====================
 // Footer year
+// =====================
 const yearEl = document.getElementById('year');
 if (yearEl) yearEl.textContent = new Date().getFullYear();
 
+// =====================
 // Clock
+// =====================
 const clockEl = document.getElementById('clockFloat');
 function tick(){ const d=new Date(); const h=String(d.getHours()).padStart(2,'0'); const m=String(d.getMinutes()).padStart(2,'0'); const s=String(d.getSeconds()).padStart(2,'0'); if(clockEl) clockEl.textContent=`🕒 ${h}:${m}:${s}`; }
 setInterval(tick,1000); tick();
 
-// Views counter (local)
-const VKEY='dm_views_total';
-try{ const views = Number(localStorage.getItem(VKEY)||0)+1; localStorage.setItem(VKEY,views); const el=document.getElementById('views'); if(el) el.textContent=`👁️ ${views}`; }catch(err){ }
+// =====================
+// Views counter for GitHub Pages (CountAPI – no backend; hit once per session)
+// =====================
+(async function(){
+  const el = document.getElementById('views');
+  if(!el) return;
 
-// i18n — keep Polish originals
+  const SESSION_FLAG = 'dm_viewed_session';
+  const firstInSession = !sessionStorage.getItem(SESSION_FLAG);
+
+  const NS = 'pagecv_169724';  // namespace (custom)
+  const KEY = 'index';          // single key for the whole page
+  const url = firstInSession
+    ? `https://api.countapi.xyz/hit/${NS}/${KEY}`
+    : `https://api.countapi.xyz/get/${NS}/${KEY}`;
+
+  try{
+    const res = await fetch(url, { cache: 'no-store' });
+    const data = await res.json();
+    if (typeof data.value === 'number') {
+      el.textContent = `👁️ ${data.value}`;
+      if (firstInSession) sessionStorage.setItem(SESSION_FLAG, '1');
+    }
+  }catch(err){
+    console.error('Counter error:', err);
+  }
+})();
+
+// =====================
+// i18n — store Polish originals
+// =====================
 const originals = {};
 document.querySelectorAll('[data-i18n]').forEach(el=>{ originals[el.getAttribute('data-i18n')] = el.innerHTML; });
 const phOriginals = {};
 document.querySelectorAll('[data-i18n-ph]').forEach(el=>{ phOriginals[el.getAttribute('data-i18n-ph')] = el.getAttribute('placeholder'); });
 
-// EN dictionary
+// Full EN dictionary
 const i18n = {
   en:{
     'menu.about':'About', 'menu.skills':'Skills', 'menu.exp':'Experience', 'menu.edu':'Education', 'menu.certs':'Certificates', 'menu.projects':'Projects', 'menu.contact':'Contact',
@@ -181,7 +219,9 @@ if (langBtn){
 const saved = (typeof localStorage!=='undefined' && localStorage.getItem('dm_lang')) || 'pl';
 setLang(saved);
 
-// --- Add-ons JS ---
+// =====================
+// Add-ons: progress bar, stars, parallax, circles, tilt, typewriter
+// =====================
 (function(){
   // Progress bar
   const progressBar = document.getElementById('scrollProgress');
@@ -241,7 +281,7 @@ setLang(saved);
 
   // 3D tilt for buttons/badges
   function addTilt(el){
-    el.addEventListener('mousemove', (e)=>{ const r = el.getBoundingClientRect(); const x = (e.clientX - r.left)/r.width - .5; const y = (e.clientY - r.top)/r.height - .5; el.style.transform = `perspective(700px) rotateX(${ -y*8 }deg) rotateY(${ x*8 }deg)`; });
+    el.addEventListener('mousemove', (e)=>{ const r = el.getBoundingClientRect(); const x = (e.clientX - r.left)/r.width - .5; const y = (e.clientY - r.top)/r.height - .5; el.style.transform = `perspective(700px) rotateX(${-y*8}deg) rotateY(${x*8}deg)`; });
     el.addEventListener('mouseleave', ()=>{ el.style.transform='perspective(700px) rotateX(0) rotateY(0)'; });
   }
   document.querySelectorAll('.tilt, .badge.tilt').forEach(addTilt);
